@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Pacientes | Nutre em Mim</title>
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <span class="marca">Nutre em Mim</span>
+    <button id="btn-sair" class="btn btn-pequeno">Sair</button>
+  </header>
+
+  <main class="pagina">
+    <div class="pagina-cabeca">
+      <div>
+        <h1>Pacientes</h1>
+        <p id="total" class="total">Carregando...</p>
+      </div>
+      <button id="btn-novo" class="btn btn-primario">Novo paciente</button>
+    </div>
+
+    <div class="ferramentas">
+      <input id="busca" type="search" placeholder="Buscar por nome, telefone ou e-mail" aria-label="Buscar paciente">
+      <select id="filtro" aria-label="Filtrar por situação">
+        <option value="todos">Todos</option>
+        <option value="ativos" selected>Ativos</option>
+        <option value="inativos">Inativos</option>
+      </select>
+    </div>
+
+    <div class="tabela-caixa">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Idade</th>
+            <th>Telefone</th>
+            <th>Objetivo</th>
+            <th>Situação</th>
+            <th><span style="position:absolute;left:-9999px">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody id="lista"></tbody>
+      </table>
+      <div id="vazio" class="vazio" hidden>Nenhum paciente encontrado. Clique em “Novo paciente” para cadastrar o primeiro.</div>
+    </div>
+  </main>
+
+  <!-- Janela de cadastro e edição -->
+  <dialog id="janela">
+    <form id="form-paciente" novalidate>
+      <div class="dialogo-corpo">
+        <h2 id="janela-titulo">Novo paciente</h2>
+        <div id="erro" class="mensagem-erro" role="alert"></div>
+
+        <div class="campo">
+          <label for="nome">Nome completo</label>
+          <input id="nome" type="text" required>
+        </div>
+
+        <div class="grade-2">
+          <div class="campo">
+            <label for="data_nascimento">Data de nascimento</label>
+            <input id="data_nascimento" type="date">
+          </div>
+          <div class="campo">
+            <label for="sexo">Sexo</label>
+            <select id="sexo">
+              <option value="">Não informado</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grade-2">
+          <div class="campo">
+            <label for="telefone">Telefone</label>
+            <input id="telefone" type="tel" placeholder="(51) 99999-9999">
+          </div>
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input id="email" type="email">
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="objetivo">Objetivo</label>
+          <input id="objetivo" type="text" placeholder="Ex.: emagrecimento, ganho de massa, reeducação alimentar">
+        </div>
+
+        <div class="campo">
+          <label for="observacoes">Observações</label>
+          <textarea id="observacoes"></textarea>
+        </div>
+
+        <label class="check"><input id="ativo" type="checkbox" checked> Paciente ativo</label>
+      </div>
+
+      <div class="dialogo-rodape">
+        <button type="button" id="btn-cancelar" class="btn">Cancelar</button>
+        <button type="submit" id="btn-salvar" class="btn btn-primario">Salvar paciente</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="aviso" class="aviso" role="status" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pacientes.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Entrar | Nutre em Mim</title>
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+  <main class="login">
+    <section class="login-marca">
+      <h1>Nutre em Mim</h1>
+      <p>Gestão de pacientes e consultas, em um só lugar.</p>
+    </section>
+
+    <section class="login-form">
+      <form id="form-login" novalidate>
+        <h2>Entrar</h2>
+        <p class="sub">Use o e-mail e a senha cadastrados.</p>
+
+        <div id="erro" class="mensagem-erro" role="alert"></div>
+
+        <div class="campo">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" autocomplete="username" required>
+        </div>
+        <div class="campo">
+          <label for="senha">Senha</label>
+          <input id="senha" type="password" autocomplete="current-password" required>
+        </div>
+
+        <button id="botao" class="btn btn-primario" type="submit" style="width:100%">Entrar</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    const form = document.getElementById("form-login");
+    const erro = document.getElementById("erro");
+    const botao = document.getElementById("botao");
+
+    // Se já estiver logada, vai direto para os pacientes.
+    db.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.replace("pacientes.html");
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      erro.textContent = "";
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+
+      if (!email || !senha) {
+        erro.textContent = "Preencha o e-mail e a senha.";
+        return;
+      }
+
+      botao.disabled = true;
+      botao.textContent = "Entrando...";
+      const { error } = await db.auth.signInWithPassword({ email, password: senha });
+
+      if (error) {
+        erro.textContent = "E-mail ou senha incorretos.";
+        botao.disabled = false;
+        botao.textContent = "Entrar";
+        return;
+      }
+      window.location.replace("pacientes.html");
+    });
+  </script>
+</body>
+</html>
