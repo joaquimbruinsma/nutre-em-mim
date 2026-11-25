@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Avaliação física | Nutre em Mim</title>
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <span class="marca">Nutre em Mim</span>
+    <nav aria-label="Principal">
+      <a class="link-nav" href="pacientes.html">Pacientes</a>
+      <button id="btn-sair" class="btn btn-pequeno">Sair</button>
+    </nav>
+  </header>
+
+  <main class="pagina">
+    <div id="erro-pagina" class="mensagem-erro" role="alert"></div>
+
+    <div id="conteudo" hidden>
+      <p><a href="pacientes.html">← Voltar para pacientes</a></p>
+      <div class="pagina-cabeca">
+        <div>
+          <h1>Avaliação física</h1>
+          <p id="paciente-info" class="total"></p>
+        </div>
+      </div>
+
+      <div id="aviso-cadastro" class="faixa-aviso" hidden>
+        Para calcular as equações, complete o cadastro do paciente com o <strong>sexo</strong> (feminino ou masculino) e a <strong>data de nascimento</strong>. Use “Editar” na lista de pacientes.
+      </div>
+
+      <section class="cartao">
+        <h2 id="form-titulo">Nova avaliação</h2>
+        <div id="erro-aval" class="mensagem-erro" role="alert"></div>
+
+        <form id="form-aval" novalidate autocomplete="off">
+          <div class="grade-3">
+            <div class="campo">
+              <label for="f-data">Data da avaliação</label>
+              <input id="f-data" type="date">
+            </div>
+            <div class="campo">
+              <label for="f-peso">Peso (kg)</label>
+              <input id="f-peso" type="text" inputmode="decimal" placeholder="Ex.: 68,5">
+            </div>
+            <div class="campo">
+              <label for="f-altura">Altura (cm)</label>
+              <input id="f-altura" type="text" inputmode="decimal" placeholder="Ex.: 165">
+            </div>
+          </div>
+
+          <h3>Dobras cutâneas (mm)</h3>
+          <p class="nota">Os campos marcados em verde são os usados pelo protocolo escolhido abaixo.</p>
+          <div id="grade-dobras" class="grade-3"></div>
+
+          <h3>Circunferências (cm)</h3>
+          <div id="grade-circ" class="grade-3"></div>
+
+          <h3>Gordura corporal e gasto energético</h3>
+          <div class="grade-3">
+            <div class="campo">
+              <label for="f-protocolo">Como obter o % de gordura</label>
+              <select id="f-protocolo"></select>
+            </div>
+            <div id="campo-pg" class="campo" hidden>
+              <label for="f-pg">% de gordura (informado)</label>
+              <input id="f-pg" type="text" inputmode="decimal" placeholder="Ex.: 24,5">
+            </div>
+            <div class="campo">
+              <label for="f-fator">Fator de atividade (opcional)</label>
+              <input id="f-fator" type="text" inputmode="decimal" placeholder="Ex.: 1,4">
+            </div>
+          </div>
+          <p id="dica-protocolo" class="nota"></p>
+          <p class="nota">Fator de atividade: o gasto total é a TMB × esse fator. Valores usuais vão de 1,2 (sedentário) a 1,9 (muito ativo); a escolha é da nutricionista.</p>
+
+          <div class="campo">
+            <label for="f-obs">Observações</label>
+            <textarea id="f-obs" maxlength="5000"></textarea>
+          </div>
+
+          <div class="linha-botoes">
+            <button type="submit" id="btn-salvar" class="btn btn-primario">Salvar avaliação</button>
+            <button type="button" id="btn-limpar" class="btn">Limpar formulário</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="cartao">
+        <h2>Resultados</h2>
+        <p class="nota">Calculados na hora, com o que está preenchido acima. Estimativas por equações publicadas: confira os valores e use seu julgamento clínico.</p>
+        <div id="resultados"></div>
+      </section>
+
+      <section class="cartao">
+        <h2>Histórico de avaliações</h2>
+        <div class="tabela-caixa">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th><th>Peso (kg)</th><th>IMC</th><th>% gordura</th><th>MLG (kg)</th>
+                <th><span class="so-leitor">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody id="historico"></tbody>
+          </table>
+          <div id="historico-vazio" class="vazio" hidden>Nenhuma avaliação salva ainda.</div>
+        </div>
+        <div id="graficos" class="graficos"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="aviso" class="aviso" role="status" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/calculos.js"></script>
+  <script src="js/avaliacoes.js"></script>
+</body>
+</html>

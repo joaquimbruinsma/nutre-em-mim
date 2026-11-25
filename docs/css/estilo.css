@@ -84,3 +84,34 @@ dialog::backdrop{background:rgba(20,30,25,.45)}
   .grade-2{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- Módulo de avaliação física ---- */
+[hidden]{display:none!important}
+.so-leitor{position:absolute;left:-9999px}
+.link-nav{padding:.4rem .8rem;border-radius:var(--raio);color:var(--tinta);text-decoration:none;font-weight:500}
+.link-nav:hover{background:var(--verde-claro)}
+.topo nav{display:flex;align-items:center;gap:.4rem}
+a{color:var(--verde-escuro)}
+h3{font-family:var(--fonte-titulo);font-size:1.1rem;font-weight:600;margin:1.4rem 0 .5rem}
+.cartao{background:var(--papel);border:1px solid var(--linha);border-radius:var(--raio);padding:1.4rem;margin-bottom:1.25rem}
+.cartao h2{font-size:1.3rem;margin-bottom:.6rem}
+.nota{color:var(--suave);font-size:.9rem;margin:0 0 1rem}
+.linha-botoes{display:flex;gap:.6rem;flex-wrap:wrap}
+.grade-3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 1rem}
+.faixa-aviso{background:#FFF4D6;color:#6B4E00;border:1px solid #F0DFA6;padding:.75rem 1rem;border-radius:var(--raio);margin-bottom:1.25rem}
+.campo input.usado{border-color:var(--verde);background:var(--verde-claro)}
+.resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.75rem;margin-bottom:1rem}
+.metrica{background:var(--fundo);border:1px solid var(--linha);border-radius:var(--raio);padding:.8rem 1rem;display:flex;flex-direction:column;gap:.15rem}
+.metrica-rotulo{font-size:.85rem;color:var(--suave)}
+.metrica-valor{font-size:1.35rem;font-family:var(--fonte-titulo)}
+.metrica-detalhe{font-size:.8rem;color:var(--suave)}
+.aviso-calculo{background:#FFF4D6;color:#6B4E00;padding:.5rem .8rem;border-radius:var(--raio);margin:0 0 .6rem;font-size:.9rem}
+td.obs{color:var(--suave);font-size:.9rem;min-width:220px}
+.graficos{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin-top:1rem}
+.grafico h3{margin-top:.4rem}
+.grafico-svg{width:100%;height:auto;max-width:560px}
+.grafico-svg .eixo{stroke:var(--linha);stroke-width:1}
+.grafico-svg .linha-grafico{fill:none;stroke:var(--verde);stroke-width:2.5}
+.grafico-svg .ponto-grafico{fill:var(--verde-escuro)}
+.grafico-svg .rotulo-grafico{font-size:11px;fill:var(--suave);font-family:var(--fonte-texto)}
+@media (max-width:760px){.grade-3{grid-template-columns:1fr}}
