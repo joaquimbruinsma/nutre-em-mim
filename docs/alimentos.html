@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Alimentos próprios | Nutre em Mim</title>
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <span class="marca">Nutre em Mim</span>
+    <nav aria-label="Principal">
+      <a class="link-nav" href="pacientes.html">Pacientes</a>
+      <a class="link-nav" href="alimentos.html" aria-current="page">Alimentos próprios</a>
+      <button id="btn-sair" class="btn btn-pequeno">Sair</button>
+    </nav>
+  </header>
+
+  <main class="pagina">
+    <div class="pagina-cabeca">
+      <div>
+        <h1>Alimentos próprios</h1>
+        <p class="total">Alimentos que não estão na TACO ou que ela traz sem dados (por exemplo, o leite integral), cadastrados com valores por 100 g, como no rótulo.</p>
+      </div>
+      <button id="btn-novo" class="btn btn-primario">Novo alimento</button>
+    </div>
+
+    <div id="erro-pagina" class="mensagem-erro" role="alert"></div>
+
+    <div class="ferramentas">
+      <input id="busca" type="search" placeholder="Buscar pelo nome" aria-label="Buscar alimento">
+    </div>
+
+    <div class="tabela-caixa">
+      <table>
+        <thead>
+          <tr><th>Nome</th><th>Categoria</th><th>Energia (por 100 g)</th><th>Fonte</th><th><span class="so-leitor">Ações</span></th></tr>
+        </thead>
+        <tbody id="lista"></tbody>
+      </table>
+      <div id="vazio" class="vazio" hidden>Nenhum alimento próprio cadastrado.</div>
+    </div>
+  </main>
+
+  <dialog id="janela">
+    <form id="form-alimento" novalidate>
+      <div class="dialogo-corpo">
+        <h2 id="janela-titulo">Novo alimento</h2>
+        <div id="erro" class="mensagem-erro" role="alert"></div>
+        <div class="campo">
+          <label for="a-nome">Nome</label>
+          <input id="a-nome" type="text" maxlength="150" placeholder="Ex.: Leite integral (rótulo Marca X)">
+        </div>
+        <div class="grade-2">
+          <div class="campo">
+            <label for="a-categoria">Categoria (opcional)</label>
+            <input id="a-categoria" type="text" maxlength="80" placeholder="Ex.: Leite e derivados">
+          </div>
+          <div class="campo">
+            <label for="a-fonte">Fonte dos dados (opcional)</label>
+            <input id="a-fonte" type="text" maxlength="150" placeholder="Ex.: Rótulo, marca X">
+          </div>
+        </div>
+        <h3>Valores por 100 g</h3>
+        <p class="nota">Energia é obrigatória; deixe em branco o que você não souber.</p>
+        <div id="grade-nutrientes" class="grade-3"></div>
+      </div>
+      <div class="dialogo-rodape">
+        <button type="button" id="btn-cancelar" class="btn">Cancelar</button>
+        <button type="submit" id="btn-salvar" class="btn btn-primario">Salvar alimento</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="aviso" class="aviso" role="status" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/alimentos.js"></script>
+</body>
+</html>

@@ -115,3 +115,52 @@ td.obs{color:var(--suave);font-size:.9rem;min-width:220px}
 .grafico-svg .ponto-grafico{fill:var(--verde-escuro)}
 .grafico-svg .rotulo-grafico{font-size:11px;fill:var(--suave);font-family:var(--fonte-texto)}
 @media (max-width:760px){.grade-3{grid-template-columns:1fr}}
+
+/* ---- Módulo de plano alimentar ---- */
+.cabeca-secao{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.cabeca-secao h2{margin:0}
+.link-nav[aria-current=page]{background:var(--verde-claro);color:var(--verde-escuro)}
+.layout-plano{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:1.25rem;align-items:start;margin-bottom:1.25rem}
+.painel-totais{position:sticky;top:1rem}
+.painel-totais .metrica{margin-bottom:.6rem}
+.refeicao-cab{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.8rem}
+.refeicao-nome{flex:1;min-width:160px;font-family:var(--fonte-titulo);font-size:1.15rem;font-weight:600;padding:.4rem .6rem;border:1px solid transparent;border-radius:var(--raio);background:transparent}
+.refeicao-nome:hover,.refeicao-nome:focus{border-color:var(--linha);background:#fff}
+.refeicao-hora{padding:.4rem .5rem;border:1px solid var(--linha);border-radius:var(--raio);background:#fff}
+.refeicao-sub{color:var(--suave);font-weight:600;margin:0 .4rem;white-space:nowrap}
+.refeicao-obs{width:100%;margin-top:.6rem;padding:.5rem .7rem;border:1px solid var(--linha);border-radius:var(--raio);background:#fff}
+.tabela-itens{min-width:600px}
+.tabela-itens td.num{text-align:right;white-space:nowrap}
+.entrada-g{width:76px;padding:.4rem .5rem;border:1px solid var(--linha);border-radius:8px;text-align:right;background:#fff}
+.entrada-medida{width:100%;min-width:150px;padding:.4rem .5rem;border:1px solid var(--linha);border-radius:8px;background:#fff}
+.entrada-g.invalido{border-color:var(--perigo);background:var(--perigo-claro)}
+.sem-dados{color:var(--perigo);font-weight:600}
+.aviso-item{color:var(--perigo);font-size:.82rem;font-weight:400}
+.busca-alimento{position:relative;margin-top:.8rem}
+.busca-alimento input{width:100%;padding:.6rem .8rem;border:1px solid var(--verde);border-radius:var(--raio);background:#fff}
+.resultados-busca{position:absolute;z-index:20;left:0;right:0;top:100%;margin:.25rem 0 0;padding:.25rem;list-style:none;background:#fff;border:1px solid var(--linha);border-radius:var(--raio);box-shadow:0 10px 30px rgba(0,0,0,.15);max-height:320px;overflow:auto}
+.resultados-busca li{display:flex;justify-content:space-between;gap:1rem;padding:.5rem .7rem;border-radius:8px;cursor:pointer}
+.resultados-busca li.ativo,.resultados-busca li:hover{background:var(--verde-claro)}
+.res-detalhe{color:var(--suave);font-size:.85rem;white-space:nowrap}
+.resultados-busca li.sem-resultado{color:var(--suave);cursor:default}
+.detalhes-micro summary{cursor:pointer;font-weight:600;margin:.6rem 0}
+.tabela-micro{min-width:0;font-size:.9rem}
+.tabela-micro td,.tabela-micro th{padding:.3rem .5rem}
+.tabela-micro td.num{text-align:right;white-space:nowrap}
+.tabela-micro tr.grupo th{background:var(--verde-claro);color:var(--verde-escuro)}
+.fonte-tabela{color:var(--suave);font-size:.85rem;margin-top:1.5rem}
+.so-impressao{display:none}
+@media (max-width:980px){.layout-plano{grid-template-columns:1fr}.painel-totais{position:static}}
+@media print{
+  body{background:#fff}
+  body > *:not(#impressao){display:none!important}
+  #impressao{display:block!important;color:#000;font-family:var(--fonte-texto);font-size:11pt;line-height:1.4}
+  #impressao h1{font-size:22pt;margin:0 0 .2rem}
+  #impressao h2{font-size:13pt;margin:1rem 0 .3rem;border-bottom:1px solid #999;padding-bottom:.15rem}
+  #impressao ul{margin:.2rem 0 .4rem 1.1rem;padding:0}
+  #impressao .imp-meta{color:#333;margin:0 0 .8rem}
+  #impressao .imp-refeicao{break-inside:avoid}
+  #impressao .imp-obs{font-style:italic;color:#333;margin:.2rem 0}
+  #impressao .imp-sub{color:#333;font-size:10pt;margin:.2rem 0 .6rem}
+  #impressao .imp-fonte{color:#555;font-size:9pt;margin-top:1.5rem}
+}

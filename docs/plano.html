@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Plano alimentar | Nutre em Mim</title>
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <span class="marca">Nutre em Mim</span>
+    <nav aria-label="Principal">
+      <a class="link-nav" href="pacientes.html">Pacientes</a>
+      <a class="link-nav" href="alimentos.html">Alimentos próprios</a>
+      <button id="btn-sair" class="btn btn-pequeno">Sair</button>
+    </nav>
+  </header>
+
+  <main class="pagina">
+    <div id="erro-pagina" class="mensagem-erro" role="alert"></div>
+
+    <div id="conteudo" hidden>
+      <p><a href="pacientes.html">← Voltar para pacientes</a></p>
+      <div class="pagina-cabeca">
+        <div>
+          <h1>Plano alimentar</h1>
+          <p id="paciente-info" class="total"></p>
+        </div>
+      </div>
+
+      <!-- Lista de planos -->
+      <section id="secao-lista" class="cartao">
+        <div class="cabeca-secao">
+          <h2>Planos do paciente</h2>
+          <button id="btn-novo-plano" class="btn btn-primario">Novo plano</button>
+        </div>
+        <div class="tabela-caixa">
+          <table>
+            <thead>
+              <tr><th>Plano</th><th>Data</th><th>Energia</th><th><span class="so-leitor">Ações</span></th></tr>
+            </thead>
+            <tbody id="lista-planos"></tbody>
+          </table>
+          <div id="planos-vazio" class="vazio" hidden>Nenhum plano ainda. Clique em “Novo plano” para começar.</div>
+        </div>
+      </section>
+
+      <!-- Editor -->
+      <section id="secao-editor" hidden>
+        <div class="cartao">
+          <h2 id="editor-titulo">Novo plano</h2>
+          <div id="erro-plano" class="mensagem-erro" role="alert"></div>
+
+          <div class="grade-3">
+            <div class="campo">
+              <label for="p-nome">Nome do plano</label>
+              <input id="p-nome" type="text" maxlength="120" placeholder="Ex.: Plano de emagrecimento">
+            </div>
+            <div class="campo">
+              <label for="p-data">Data</label>
+              <input id="p-data" type="date">
+            </div>
+            <div class="campo">
+              <label for="p-kcal">Meta de energia (kcal/dia)</label>
+              <input id="p-kcal" type="text" inputmode="decimal" placeholder="Ex.: 1800">
+            </div>
+          </div>
+          <div class="grade-3">
+            <div class="campo">
+              <label for="p-prot">Meta de proteínas (% das calorias)</label>
+              <input id="p-prot" type="text" inputmode="decimal" placeholder="Opcional">
+            </div>
+            <div class="campo">
+              <label for="p-carb">Meta de carboidratos (%)</label>
+              <input id="p-carb" type="text" inputmode="decimal" placeholder="Opcional">
+            </div>
+            <div class="campo">
+              <label for="p-lip">Meta de lipídios (%)</label>
+              <input id="p-lip" type="text" inputmode="decimal" placeholder="Opcional">
+            </div>
+          </div>
+          <div class="campo">
+            <label for="p-obs">Orientações gerais</label>
+            <textarea id="p-obs" maxlength="5000" placeholder="Hidratação, preparo, substituições combinadas..."></textarea>
+          </div>
+        </div>
+
+        <div class="layout-plano">
+          <div>
+            <div id="refeicoes"></div>
+            <button id="btn-nova-refeicao" class="btn">+ Adicionar refeição</button>
+          </div>
+          <aside id="painel" class="cartao painel-totais" aria-label="Totais do plano"></aside>
+        </div>
+
+        <div class="cartao">
+          <div class="linha-botoes">
+            <button id="btn-salvar-plano" class="btn btn-primario">Salvar plano</button>
+            <button id="btn-imprimir" class="btn">Imprimir / salvar em PDF</button>
+            <button id="btn-fechar" class="btn">Fechar editor</button>
+          </div>
+          <label class="check"><input id="chk-nutri" type="checkbox"> Incluir os valores nutricionais na impressão</label>
+        </div>
+      </section>
+
+      <p class="fonte-tabela" id="fonte-taco"></p>
+    </div>
+  </main>
+
+  <div id="impressao" class="so-impressao"></div>
+  <div id="aviso" class="aviso" role="status" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/nutricao.js"></script>
+  <script src="js/plano.js"></script>
+</body>
+</html>

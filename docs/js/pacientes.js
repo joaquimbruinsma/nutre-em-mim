@@ -158,6 +158,10 @@ function celulaAcoes(p) {
   avaliar.className = "btn btn-pequeno";
   avaliar.textContent = "Avaliações";
   avaliar.href = "avaliacoes.html?paciente=" + encodeURIComponent(p.id);
+  const plano = document.createElement("a");
+  plano.className = "btn btn-pequeno";
+  plano.textContent = "Plano";
+  plano.href = "plano.html?paciente=" + encodeURIComponent(p.id);
   const editar = document.createElement("button");
   editar.className = "btn btn-pequeno";
   editar.textContent = "Editar";
@@ -166,7 +170,7 @@ function celulaAcoes(p) {
   apagar.className = "btn btn-pequeno btn-perigo";
   apagar.textContent = "Excluir";
   apagar.addEventListener("click", () => excluir(p));
-  td.append(avaliar, editar, apagar);
+  td.append(avaliar, plano, editar, apagar);
   return td;
 }
 
