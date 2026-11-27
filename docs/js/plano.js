@@ -103,7 +103,14 @@ const resolver = (ref) => mapa.get(ref) || null;
   $('btn-salvar-plano').addEventListener('click', salvarPlano);
   $('btn-imprimir').addEventListener('click', imprimir);
   $('btn-fechar').addEventListener('click', fecharEditor);
-  ['p-nome', 'p-data', 'p-kcal', 'p-prot', 'p-carb', 'p-lip', 'p-obs'].forEach((i) => $(i).addEventListener('input', lerCabecalho));
+  ['p-nome', 'p-data', 'p-obs'].forEach((i) => $(i).addEventListener('input', lerCabecalho));
+  $('form-ref').addEventListener('submit', salvarRef);
+  $('btn-ref-cancelar').addEventListener('click', () => $('janela-ref').close());
+  $('btn-ref-limpar').addEventListener('click', limparRef);
+  $('btn-carregar-peso').addEventListener('click', carregarPesoAvaliacao);
+  document.querySelectorAll('input[name="r-modo"]').forEach((r) => r.addEventListener('change', () => trocarModo(r.value)));
+  ['r-peso', 'r-kcal', 'r-prot', 'r-carb', 'r-lip'].forEach((i) => $(i).addEventListener('input', atualizarTotalRef));
+  $('btn-nutri-fechar').addEventListener('click', () => $('janela-nutri').close());
   window.addEventListener('beforeunload', (e) => { if (sujo) { e.preventDefault(); e.returnValue = ''; } });
 })();
 
@@ -203,10 +210,6 @@ function abrirEditor(p) {
   $('erro-plano').textContent = '';
   $('p-nome').value = plano.nome;
   $('p-data').value = plano.data_plano;
-  $('p-kcal').value = plano.metas.kcal ?? '';
-  $('p-prot').value = plano.metas.prot ?? '';
-  $('p-carb').value = plano.metas.carb ?? '';
-  $('p-lip').value = plano.metas.lip ?? '';
   $('p-obs').value = plano.observacoes;
   $('secao-editor').hidden = false;
   renderizarRefeicoes();
@@ -225,7 +228,6 @@ function lerCabecalho() {
   plano.nome = $('p-nome').value;
   plano.data_plano = $('p-data').value;
   plano.observacoes = $('p-obs').value;
-  plano.metas = { kcal: num($('p-kcal').value), prot: num($('p-prot').value), carb: num($('p-carb').value), lip: num($('p-lip').value) };
   sujo = true;
   atualizarNumeros();
 }
@@ -431,35 +433,119 @@ function atualizarNumeros() {
   desenharPainel(r);
 }
 
-function metricaPainel(rotulo, valor, detalhe) {
-  const c = el('div', 'metrica');
-  c.append(el('span', 'metrica-rotulo', rotulo), el('strong', 'metrica-valor', valor));
-  if (detalhe) c.append(el('span', 'metrica-detalhe', detalhe));
-  return c;
+const NOME_MACRO = { prot: 'Proteínas', carb: 'Carboidratos', lip: 'Lipídios' };
+const SIGLA_MACRO = { prot: 'PTN', carb: 'CHO', lip: 'LIP' };
+const MACROS = ['prot', 'carb', 'lip'];
+const valorCampo = (v) => (typeof v === 'number' ? String(v).replace('.', ',') : '');
+const arred = (v, c) => Math.round(v * 10 ** c) / 10 ** c;
+const NS_SVG = 'http://www.w3.org/2000/svg';
+
+function criarSvg(nome, atributos) {
+  const e = document.createElementNS(NS_SVG, nome);
+  Object.entries(atributos).forEach(([k, v]) => e.setAttribute(k, v));
+  return e;
+}
+
+// Rosca com a distribuição das calorias (proteínas, carboidratos e lipídios) e a energia total no centro.
+function desenharDonut(d, kcal) {
+  const R = 52;
+  const L = 2 * Math.PI * R;
+  const svg = criarSvg('svg', { viewBox: '0 0 140 140', class: 'donut', role: 'img' });
+  const partes = MACROS.map((k) => [k, d[k] || 0]);
+  const soma = partes.reduce((t, [, v]) => t + v, 0);
+  svg.setAttribute('aria-label', soma > 0
+    ? 'Distribuição das calorias: ' + partes.map(([k, v]) => `${NOME_MACRO[k]} ${fmt(v, 0)}%`).join(', ')
+    : 'Nenhum alimento no plano');
+  svg.append(criarSvg('circle', { cx: 70, cy: 70, r: R, class: 'donut-trilho' }));
+  if (soma > 0) {
+    let acumulado = 0;
+    partes.forEach(([k, v]) => {
+      const len = (v / 100) * L;
+      svg.append(criarSvg('circle', {
+        cx: 70, cy: 70, r: R, class: 'donut-seg seg-' + k,
+        'stroke-dasharray': `${len} ${L - len}`, 'stroke-dashoffset': -acumulado, transform: 'rotate(-90 70 70)',
+      }));
+      acumulado += len;
+    });
+  }
+  const valor = criarSvg('text', { x: 70, y: 72, 'text-anchor': 'middle', class: 'donut-valor' });
+  valor.textContent = fmt(kcal, 0);
+  const un = criarSvg('text', { x: 70, y: 90, 'text-anchor': 'middle', class: 'donut-un' });
+  un.textContent = 'kcal';
+  svg.append(valor, un);
+  return svg;
+}
+
+// Selo com a meta. Verde: dentro de 10% da meta. Seta: ↑ falta para a meta, ↓ passou da meta.
+function selo(atual, alvo, texto) {
+  const c = Nutricao.compararMeta(atual, alvo);
+  const seta = c.direcao === 'abaixo' ? ' ↑' : c.direcao === 'acima' ? ' ↓' : '';
+  const s = el('span', 'selo-meta ' + (c.dentro ? 'selo-ok' : 'selo-fora'), texto + seta);
+  const dir = c.direcao === 'abaixo' ? 'abaixo da meta' : c.direcao === 'acima' ? 'acima da meta' : 'na meta';
+  const tol = fmt(Nutricao.TOLERANCIA * 100, 0);
+  s.title = `${dir} (${c.dentro ? 'dentro' : 'fora'} da tolerância de ${tol}%)`;
+  s.setAttribute('aria-label', `Meta ${texto}: ${dir}, ${c.dentro ? 'dentro' : 'fora'} da tolerância de ${tol}%`);
+  return s;
 }
 
 function desenharPainel(r) {
   const p = $('painel');
   p.replaceChildren();
-  p.append(el('h2', null, 'Totais do dia'));
+  p.append(el('h2', null, 'Resumo de nutrientes'));
   const t = r.total;
   const m = (plano && plano.metas) || {};
-
-  let detalheKcal = null;
-  if (m.kcal > 0) {
-    const dif = t.kcal - m.kcal;
-    detalheKcal = `Meta ${fmt(m.kcal, 0)} kcal · ${dif >= 0 ? '+' : '−'}${fmt(Math.abs(dif), 0)} kcal (${fmt((t.kcal / m.kcal) * 100, 0)}% da meta)`;
-  }
-  p.append(metricaPainel('Energia', fmt(t.kcal, 0) + ' kcal', detalheKcal));
-
+  const peso = m.peso > 0 ? m.peso : null;
   const d = Nutricao.distribuicao(t);
-  const linhaMacro = (rotulo, g, pct, meta) => {
-    const detalhe = (pct !== null ? fmt(pct, 0) + '% das calorias' : '—') + (meta > 0 ? ` · meta ${fmt(meta, 0)}%` : '');
-    return metricaPainel(rotulo, fmt(g, 1) + ' g', detalhe);
-  };
-  p.append(linhaMacro('Proteínas', t.prot, d.prot, m.prot), linhaMacro('Carboidratos', t.carb, d.carb, m.carb), linhaMacro('Lipídios', t.lip, d.lip, m.lip));
-  p.append(metricaPainel('Fibra alimentar', fmt(t.fibra, 1) + ' g'));
-  p.append(el('p', 'nota', 'Percentuais calculados sobre 4 × proteínas + 9 × lipídios + 4 × carboidratos.'));
+  const a = Nutricao.alvos(m);
+
+  p.append(desenharDonut(d, t.kcal));
+
+  const tab = el('table', 'resumo-macros');
+  tab.append(el('caption', 'so-leitor', 'Macronutrientes do plano e metas'));
+  MACROS.forEach((k) => {
+    const tr = el('tr');
+    const c1 = el('td');
+    const rot = el('span', 'rotulo-macro rot-' + k, SIGLA_MACRO[k]);
+    rot.title = NOME_MACRO[k];
+    c1.append(rot);
+    tr.append(
+      c1,
+      el('td', 'num', peso ? fmt(t[k] / peso, 2) + ' g/kg' : '—'),
+      el('td', 'num', `${fmt(t[k], 1)} g` + (d[k] !== null ? ` (${fmt(d[k], 1)}%)` : ''))
+    );
+    const c4 = el('td', 'num');
+    if (a[k]) c4.append(selo(t[k], a[k].g, `${fmt(a[k].g, 0)} g` + (a[k].pct !== null ? ` (${fmt(a[k].pct, 0)}%)` : '')));
+    tr.append(c4);
+    tab.append(tr);
+  });
+  const trK = el('tr', 'linha-kcal');
+  const cK = el('td'); cK.append(el('strong', null, 'Kcal'));
+  const cKv = el('td', 'num'); cKv.colSpan = 2; cKv.append(el('strong', null, fmt(t.kcal, 0) + ' kcal'));
+  const cKs = el('td', 'num');
+  if (a.kcal) cKs.append(selo(t.kcal, a.kcal, fmt(a.kcal, 0) + ' kcal'));
+  trK.append(cK, cKv, cKs);
+  tab.append(trK);
+  p.append(tab);
+
+  p.append(el('p', 'fibra-linha', 'Fibra alimentar: ' + fmt(t.fibra, 1) + ' g'));
+  if (a.kcal || a.prot) {
+    p.append(el('p', 'nota', `Verde: até ${fmt(Nutricao.TOLERANCIA * 100, 0)}% de diferença da meta. ↑ falta para a meta · ↓ passou da meta.` + (a.kcalDerivada ? ' A energia da meta foi calculada pelos macronutrientes.' : '')));
+  } else {
+    p.append(el('p', 'nota', 'Defina os valores de referência (peso, energia e macronutrientes) para comparar o plano com as metas.'));
+  }
+  if (peso === null && a.prot === null && m.modo === 'gkg') {
+    p.append(el('p', 'aviso-calculo', 'Para usar metas em g/kg, informe o peso nos valores de referência.'));
+  }
+
+  const acoes = el('div', 'acoes-painel');
+  const bTodos = el('button', 'btn btn-primario largo', 'Ver todos os nutrientes');
+  bTodos.type = 'button';
+  bTodos.addEventListener('click', abrirTodos);
+  const bRef = el('button', 'btn largo', 'Configurar valores de referência');
+  bRef.type = 'button';
+  bRef.addEventListener('click', abrirRef);
+  acoes.append(bTodos, bRef);
+  p.append(acoes);
 
   if (r.semDados.length) {
     p.append(el('p', 'aviso-calculo', 'Sem dados de energia na TACO: ' + r.semDados.join('; ') + '. Esses itens não entram na soma. Cadastre-os em “Alimentos próprios” (ex.: pelo rótulo).'));
@@ -467,22 +553,162 @@ function desenharPainel(r) {
   if (r.naoEncontrados.length) {
     p.append(el('p', 'aviso-calculo', 'Alimentos não encontrados (talvez removidos): ' + r.naoEncontrados.join('; ') + '.'));
   }
+}
 
-  const det = el('details', 'detalhes-micro');
-  det.append(el('summary', null, 'Gorduras, minerais e vitaminas'));
-  const tab = el('table', 'tabela-micro');
+// ---------- Todos os nutrientes ----------
+function abrirTodos() {
+  const r = Nutricao.totais(plano.refeicoes, resolver);
+  const tab = $('tabela-todos');
+  tab.replaceChildren();
   let grupo = '';
-  Nutricao.NUTRIENTES.filter((n) => !['kcal', 'prot', 'lip', 'carb', 'fibra'].includes(n.k)).forEach((n) => {
+  Nutricao.NUTRIENTES.forEach((n) => {
     if (n.grupo !== grupo) {
       grupo = n.grupo;
-      const trg = el('tr', 'grupo'); const th = el('th', null, grupo); th.colSpan = 2; trg.append(th); tab.append(trg);
+      const trg = el('tr', 'grupo');
+      const th = el('th', null, grupo);
+      th.colSpan = 2;
+      trg.append(th);
+      tab.append(trg);
     }
     const tr = el('tr');
-    tr.append(el('td', null, n.rotulo), el('td', 'num', fmt(t[n.k], n.casas) + ' ' + n.un));
+    tr.append(el('td', null, n.rotulo), el('td', 'num', fmt(r.total[n.k], n.casas) + ' ' + n.un));
     tab.append(tr);
   });
-  det.append(tab, el('p', 'nota', 'Valores ausentes na TACO entram como 0, então esses totais podem estar subestimados.'));
-  p.append(det);
+  $('janela-nutri').showModal();
+}
+
+// ---------- Valores de referência ----------
+function modoRef() { return document.querySelector('input[name="r-modo"]:checked').value; }
+
+function lerRef() {
+  return {
+    peso: num($('r-peso').value), kcal: num($('r-kcal').value), modo: modoRef(),
+    prot: num($('r-prot').value), carb: num($('r-carb').value), lip: num($('r-lip').value),
+  };
+}
+
+function rotulosRef() {
+  const gkg = modoRef() === 'gkg';
+  MACROS.forEach((k) => { $('r-' + k + '-rot').textContent = `${NOME_MACRO[k]} (${gkg ? 'g/kg' : '%'})`; });
+}
+
+function atualizarTotalRef() {
+  const v = lerRef();
+  const barra = $('r-barra');
+  barra.replaceChildren();
+  const valores = MACROS.map((k) => (v[k] > 0 ? v[k] : 0));
+  let larguras;
+  if (v.modo === 'pct') {
+    const soma = valores.reduce((x, y) => x + y, 0);
+    $('r-total').textContent = `Total: ${fmt(soma, 1)}%` + (soma > 0 && Math.abs(soma - 100) > 0.5 ? ' (precisa somar 100%)' : '');
+    larguras = valores;
+  } else {
+    const peso = v.peso > 0 ? v.peso : null;
+    const kcals = MACROS.map((k, i) => (peso ? valores[i] * peso * Nutricao.KCAL_POR_G[k] : 0));
+    const somaKcal = kcals.reduce((x, y) => x + y, 0);
+    const somaGkg = valores.reduce((x, y) => x + y, 0);
+    $('r-total').textContent = peso
+      ? `Total: ${fmt(somaGkg, 2)} g/kg · cerca de ${fmt(somaKcal, 0)} kcal com o peso informado`
+      : 'Informe o peso para ver o total em kcal.';
+    larguras = kcals.map((x) => (somaKcal > 0 ? (x / somaKcal) * 100 : 0));
+  }
+  MACROS.forEach((k, i) => {
+    const s = el('span', 'barra-' + k);
+    s.style.width = Math.min(100, larguras[i]) + '%';
+    barra.append(s);
+  });
+}
+
+function abrirRef() {
+  const m = plano.metas || {};
+  $('erro-ref').textContent = '';
+  $('info-ref').textContent = '';
+  $('r-peso').value = valorCampo(m.peso);
+  $('r-kcal').value = valorCampo(m.kcal);
+  document.querySelector(`input[name="r-modo"][value="${m.modo === 'gkg' ? 'gkg' : 'pct'}"]`).checked = true;
+  MACROS.forEach((k) => { $('r-' + k).value = valorCampo(m[k]); });
+  rotulosRef();
+  atualizarTotalRef();
+  $('janela-ref').showModal();
+}
+
+// Ao trocar de percentuais para g/kg (ou o contrário), converte os valores quando há dados para isso.
+function trocarModo(novo) {
+  const anterior = novo === 'gkg' ? 'pct' : 'gkg';
+  const peso = num($('r-peso').value);
+  const kcal = num($('r-kcal').value);
+  const v = MACROS.map((k) => num($('r-' + k).value));
+  let novos = null;
+  if (v.every((x) => x !== null && Number.isFinite(x)) && peso > 0) {
+    if (anterior === 'pct' && kcal > 0) {
+      novos = MACROS.map((k, i) => arred((((v[i] / 100) * kcal) / Nutricao.KCAL_POR_G[k]) / peso, 2));
+    } else if (anterior === 'gkg') {
+      const kk = MACROS.map((k, i) => v[i] * peso * Nutricao.KCAL_POR_G[k]);
+      const base = kcal > 0 ? kcal : kk.reduce((x, y) => x + y, 0);
+      if (base > 0) novos = kk.map((x) => arred((x / base) * 100, 1));
+    }
+  }
+  MACROS.forEach((k, i) => { $('r-' + k).value = novos ? valorCampo(novos[i]) : ''; });
+  rotulosRef();
+  atualizarTotalRef();
+}
+
+async function carregarPesoAvaliacao() {
+  $('erro-ref').textContent = '';
+  $('info-ref').textContent = '';
+  const { data, error } = await db.from('avaliacoes').select('peso, data_avaliacao')
+    .eq('paciente_id', paciente.id).order('data_avaliacao', { ascending: false }).limit(1);
+  if (error) {
+    console.error(error);
+    $('erro-ref').textContent = 'Não foi possível consultar as avaliações.';
+    return;
+  }
+  if (!data.length || !(data[0].peso > 0)) {
+    $('erro-ref').textContent = 'Este paciente ainda não tem uma avaliação com peso.';
+    return;
+  }
+  $('r-peso').value = valorCampo(data[0].peso);
+  $('info-ref').textContent = `Peso de ${dataBR(data[0].data_avaliacao)} carregado.`;
+  atualizarTotalRef();
+}
+
+function salvarRef(e) {
+  e.preventDefault();
+  const v = lerRef();
+  const erro = (t) => { $('erro-ref').textContent = t; };
+  $('info-ref').textContent = '';
+  if (v.peso !== null && (Number.isNaN(v.peso) || v.peso < 2 || v.peso > 400)) return erro('Peso: informe um valor entre 2 e 400 kg.');
+  if (v.kcal !== null && (Number.isNaN(v.kcal) || v.kcal < 300 || v.kcal > 10000)) return erro('Energia: informe um valor entre 300 e 10000 kcal.');
+
+  const preenchidos = MACROS.filter((k) => v[k] !== null);
+  if (preenchidos.length) {
+    if (preenchidos.length < 3) return erro('Preencha os três macronutrientes ou deixe os três em branco.');
+    const maximo = v.modo === 'pct' ? 100 : 10;
+    for (const k of MACROS) {
+      if (Number.isNaN(v[k]) || v[k] < 0 || v[k] > maximo) return erro(`${NOME_MACRO[k]}: informe um valor entre 0 e ${maximo}.`);
+    }
+    if (v.modo === 'pct') {
+      const soma = v.prot + v.carb + v.lip;
+      if (Math.abs(soma - 100) > 0.5) return erro('Os percentuais precisam somar 100%.');
+      if (!(v.kcal > 0)) return erro('Informe a energia (kcal) para usar percentuais.');
+    } else if (!(v.peso > 0)) {
+      return erro('Informe o peso para usar g/kg.');
+    }
+  }
+
+  const metas = {};
+  Object.entries(v).forEach(([k, x]) => { if (x !== null && x !== undefined) metas[k] = x; });
+  plano.metas = metas;
+  sujo = true;
+  $('janela-ref').close();
+  atualizarNumeros();
+}
+
+function limparRef() {
+  plano.metas = {};
+  sujo = true;
+  $('janela-ref').close();
+  atualizarNumeros();
 }
 
 // ---------- Salvar ----------
@@ -490,11 +716,6 @@ function validarPlano() {
   lerCabecalho();
   if (!plano.nome.trim()) return 'Dê um nome ao plano.';
   if (!plano.data_plano) return 'Informe a data do plano.';
-  const m = plano.metas;
-  if (Number.isNaN(m.kcal) || (m.kcal !== null && (m.kcal < 300 || m.kcal > 10000))) return 'Meta de energia: informe um valor entre 300 e 10000 kcal.';
-  for (const [k, rotulo] of [['prot', 'proteínas'], ['carb', 'carboidratos'], ['lip', 'lipídios']]) {
-    if (Number.isNaN(m[k]) || (m[k] !== null && (m[k] < 0 || m[k] > 100))) return `Meta de ${rotulo}: informe um percentual entre 0 e 100.`;
-  }
   for (const ref of plano.refeicoes) {
     for (const it of ref.itens) {
       if (!(it.g > 0) || it.g > 5000) return `Informe a quantidade (em gramas, até 5000) de "${it.nome}" na refeição "${ref.nome}".`;

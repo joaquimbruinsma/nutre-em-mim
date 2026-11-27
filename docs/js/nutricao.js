@@ -108,7 +108,45 @@
     return { prot: (kp / soma) * 100, lip: (kl / soma) * 100, carb: (kc / soma) * 100 };
   }
 
-  const api = { NUTRIENTES, CHAVES, normalizar, prepararTaco, prepararProprio, buscar, nutrientesDoItem, totais, distribuicao };
+
+  // Tolerância para considerar o valor do plano "dentro da meta" (10%).
+  const TOLERANCIA = 0.10;
+  const KCAL_POR_G = { prot: 4, carb: 4, lip: 9 };
+
+  // Metas de referência: { peso, kcal, modo: 'pct' | 'gkg', prot, carb, lip }.
+  // modo 'pct': prot/carb/lip são % das calorias (precisa da energia).
+  // modo 'gkg': são g por kg de peso (precisa do peso). Planos antigos, sem "modo", valem como 'pct'.
+  function alvos(m) {
+    const saida = { kcal: null, kcalDerivada: false, prot: null, carb: null, lip: null };
+    if (!m) return saida;
+    const kcal = m.kcal > 0 ? m.kcal : null;
+    const peso = m.peso > 0 ? m.peso : null;
+    saida.kcal = kcal;
+    const ks = ['prot', 'carb', 'lip'];
+    if (!ks.every((k) => typeof m[k] === 'number' && m[k] >= 0)) return saida;
+    if (m.modo === 'gkg') {
+      if (!peso) return saida;
+      const gramas = {};
+      let soma = 0;
+      ks.forEach((k) => { gramas[k] = m[k] * peso; soma += gramas[k] * KCAL_POR_G[k]; });
+      const base = kcal || soma;
+      if (!kcal) { saida.kcal = soma; saida.kcalDerivada = true; }
+      ks.forEach((k) => { saida[k] = { g: gramas[k], pct: base > 0 ? (gramas[k] * KCAL_POR_G[k] / base) * 100 : null }; });
+    } else {
+      if (!kcal) return saida;
+      ks.forEach((k) => { saida[k] = { g: ((m[k] / 100) * kcal) / KCAL_POR_G[k], pct: m[k] }; });
+    }
+    return saida;
+  }
+
+  // Compara o valor do plano com a meta. direcao: 'abaixo' (falta), 'acima' (passou) ou 'igual'.
+  function compararMeta(atual, alvo) {
+    if (!(alvo > 0)) return null;
+    const rel = Math.abs(atual - alvo) / alvo;
+    return { rel, dentro: rel <= TOLERANCIA, direcao: rel <= 0.005 ? 'igual' : (atual < alvo ? 'abaixo' : 'acima') };
+  }
+
+  const api = { NUTRIENTES, CHAVES, normalizar, prepararTaco, prepararProprio, buscar, nutrientesDoItem, totais, distribuicao, TOLERANCIA, KCAL_POR_G, alvos, compararMeta };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   raiz.Nutricao = api;
 })(typeof window !== 'undefined' ? window : globalThis);

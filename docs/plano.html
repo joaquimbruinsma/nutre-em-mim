@@ -52,7 +52,7 @@
           <h2 id="editor-titulo">Novo plano</h2>
           <div id="erro-plano" class="mensagem-erro" role="alert"></div>
 
-          <div class="grade-3">
+          <div class="grade-2">
             <div class="campo">
               <label for="p-nome">Nome do plano</label>
               <input id="p-nome" type="text" maxlength="120" placeholder="Ex.: Plano de emagrecimento">
@@ -61,25 +61,8 @@
               <label for="p-data">Data</label>
               <input id="p-data" type="date">
             </div>
-            <div class="campo">
-              <label for="p-kcal">Meta de energia (kcal/dia)</label>
-              <input id="p-kcal" type="text" inputmode="decimal" placeholder="Ex.: 1800">
-            </div>
           </div>
-          <div class="grade-3">
-            <div class="campo">
-              <label for="p-prot">Meta de proteínas (% das calorias)</label>
-              <input id="p-prot" type="text" inputmode="decimal" placeholder="Opcional">
-            </div>
-            <div class="campo">
-              <label for="p-carb">Meta de carboidratos (%)</label>
-              <input id="p-carb" type="text" inputmode="decimal" placeholder="Opcional">
-            </div>
-            <div class="campo">
-              <label for="p-lip">Meta de lipídios (%)</label>
-              <input id="p-lip" type="text" inputmode="decimal" placeholder="Opcional">
-            </div>
-          </div>
+          <p class="nota">As metas de energia e de macronutrientes ficam em “Configurar valores de referência”, no resumo de nutrientes ao lado.</p>
           <div class="campo">
             <label for="p-obs">Orientações gerais</label>
             <textarea id="p-obs" maxlength="5000" placeholder="Hidratação, preparo, substituições combinadas..."></textarea>
@@ -107,6 +90,72 @@
       <p class="fonte-tabela" id="fonte-taco"></p>
     </div>
   </main>
+
+  <!-- Valores de referência -->
+  <dialog id="janela-ref">
+    <form id="form-ref" novalidate>
+      <div class="dialogo-corpo">
+        <h2>Valores de referência</h2>
+        <p class="nota">O peso é usado no cálculo de g/kg, e as metas aparecem ao lado dos valores do plano, no resumo de nutrientes.</p>
+        <div id="erro-ref" class="mensagem-erro" role="alert"></div>
+        <div id="info-ref" class="mensagem-ok" role="status"></div>
+
+        <div class="grade-2">
+          <div class="campo">
+            <label for="r-peso">Peso (kg)</label>
+            <div class="pasta">
+              <input id="r-peso" type="text" inputmode="decimal" placeholder="Ex.: 68,5">
+              <button type="button" id="btn-carregar-peso" class="btn">Carregar da avaliação</button>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="r-kcal">Energia (kcal/dia)</label>
+            <input id="r-kcal" type="text" inputmode="decimal" placeholder="Ex.: 1900">
+          </div>
+        </div>
+
+        <fieldset class="modo-ref">
+          <legend>Adequação de macronutrientes</legend>
+          <label class="check"><input type="radio" name="r-modo" value="pct" checked> Percentuais</label>
+          <label class="check"><input type="radio" name="r-modo" value="gkg"> g/kg</label>
+        </fieldset>
+
+        <div class="grade-3">
+          <div class="campo">
+            <label for="r-prot" id="r-prot-rot">Proteínas (%)</label>
+            <input id="r-prot" type="text" inputmode="decimal">
+          </div>
+          <div class="campo">
+            <label for="r-carb" id="r-carb-rot">Carboidratos (%)</label>
+            <input id="r-carb" type="text" inputmode="decimal">
+          </div>
+          <div class="campo">
+            <label for="r-lip" id="r-lip-rot">Lipídios (%)</label>
+            <input id="r-lip" type="text" inputmode="decimal">
+          </div>
+        </div>
+        <div id="r-barra" class="barra-macros" aria-hidden="true"></div>
+        <p id="r-total" class="nota"></p>
+      </div>
+      <div class="dialogo-rodape">
+        <button type="button" id="btn-ref-limpar" class="btn btn-perigo btn-esquerda">Não utilizar</button>
+        <button type="button" id="btn-ref-cancelar" class="btn">Cancelar</button>
+        <button type="submit" class="btn btn-primario">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Todos os nutrientes -->
+  <dialog id="janela-nutri">
+    <div class="dialogo-corpo">
+      <h2>Todos os nutrientes</h2>
+      <p class="nota">Total do dia, somando todas as refeições. Valores ausentes na TACO entram como 0, então os totais podem estar subestimados.</p>
+      <div class="tabela-caixa"><table id="tabela-todos" class="tabela-micro"></table></div>
+    </div>
+    <div class="dialogo-rodape">
+      <button type="button" id="btn-nutri-fechar" class="btn btn-primario">Fechar</button>
+    </div>
+  </dialog>
 
   <div id="impressao" class="so-impressao"></div>
   <div id="aviso" class="aviso" role="status" hidden></div>
